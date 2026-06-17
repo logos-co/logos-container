@@ -21,7 +21,7 @@
   ];
 
   meta = with pkgs.lib; {
-    description = "Container contract: the Qt-free ModuleContainer interface, the module descriptor value types it exchanges, and the shared module-name allowlist";
+    description = "Container contract: The Logos ModuleContainer interface, the module descriptor value types it exchanges, and the shared module-name allowlist";
     platforms = platforms.unix;
   };
 }
