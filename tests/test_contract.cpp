@@ -4,9 +4,11 @@
 // itself depend on, so a regression here breaks the whole stack.
 #include <gtest/gtest.h>
 
+#include <logos_container/load_status.h>
 #include <logos_container/module_descriptor.h>
 #include <logos_container/module_container.h>
 
+#include <chrono>
 #include <functional>
 #include <optional>
 #include <string>
@@ -53,4 +55,15 @@ TEST(ModuleContainer, InterfaceIsImplementable) {
     EXPECT_FALSE(c.hasModule("x"));
     EXPECT_FALSE(c.pid("x").has_value());        // default impl
     EXPECT_TRUE(c.getAllPids().empty());          // default impl
+}
+
+// A container that cannot tell what became of a child must say so, not claim
+// the module loaded: Unknown leaves the caller where it was, Failed would ground
+// a refusal in nothing.
+TEST(ModuleContainer, AwaitLoadDefaultsToUnknown) {
+    NullContainer c;
+    const LogosCore::LoadOutcome out =
+        c.awaitLoad("x", std::chrono::milliseconds(0));
+    EXPECT_EQ(out.verdict, LogosCore::LoadVerdict::Unknown);
+    EXPECT_TRUE(out.reason.empty());
 }
