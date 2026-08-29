@@ -1,7 +1,9 @@
 #ifndef MODULE_CONTAINER_H
 #define MODULE_CONTAINER_H
 
+#include "load_status.h"
 #include "module_descriptor.h"
+#include <chrono>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -32,6 +34,19 @@ public:
                         LoadedModuleHandle& out) = 0;
 
     virtual bool sendToken(const std::string& name, const std::string& token) = 0;
+
+    // Wait, bounded, for the one thing launch() cannot know: whether the
+    // module's plugin actually loaded. Returns as soon as the child reports a
+    // verdict or dies, so the common cases cost what the child costs and only a
+    // silent, live child waits out `timeout`.
+    //
+    // The default is Unknown — the honest answer for a container that cannot
+    // observe what became of its children — and leaves the caller's behaviour
+    // exactly as it was before this existed.
+    virtual LoadOutcome awaitLoad(const std::string& /*name*/,
+                                  std::chrono::milliseconds /*timeout*/) {
+        return {};
+    }
 
     virtual void terminate(const std::string& name) = 0;
 
