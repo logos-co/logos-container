@@ -4,6 +4,7 @@
 // itself depend on, so a regression here breaks the whole stack.
 #include <gtest/gtest.h>
 
+#include <logos_container/channel_process.h>
 #include <logos_container/load_status.h>
 #include <logos_container/module_descriptor.h>
 #include <logos_container/module_container.h>
@@ -66,4 +67,25 @@ TEST(ModuleContainer, AwaitLoadDefaultsToUnknown) {
         c.awaitLoad("x", std::chrono::milliseconds(0));
     EXPECT_EQ(out.verdict, LogosCore::LoadVerdict::Unknown);
     EXPECT_TRUE(out.reason.empty());
+}
+
+// A channel process is implementable, and its callbacks start empty.
+namespace {
+class NullChannelProcess : public LogosCore::ChannelProcess {
+public:
+    bool writeLine(const std::string&) override { return false; }
+    void closeInput() override {}
+    void terminate() override {}
+    int64_t pid() const override { return -1; }
+};
+} // namespace
+
+TEST(ChannelProcess, InterfaceIsImplementable) {
+    NullChannelProcess process;
+    EXPECT_FALSE(process.writeLine("x"));
+    EXPECT_EQ(process.pid(), -1);
+    LogosCore::ChannelCallbacks callbacks;
+    EXPECT_FALSE(callbacks.onLine);
+    EXPECT_FALSE(callbacks.onLog);
+    EXPECT_FALSE(callbacks.onExit);
 }
