@@ -13,11 +13,19 @@
         inherit system;
         pkgs = import nixpkgs { inherit system; };
       });
+
+      forAllTargetsAndAndroid = f: logos-nix.lib.forAllTargets f // {
+        aarch64-android = f {
+          system = "aarch64-android";
+          inherit (logos-nix.lib.mobileTargets.aarch64-android) pkgs;
+        };
+      };
     in
     {
       # "x86_64-windows" pseudo-system: a cross derivation's `system` is its
       # BUILD platform, so it evaluates anywhere and realises on x86_64-linux.
-      packages = logos-nix.lib.forAllTargets ({ pkgs, system, ... }:
+      # "aarch64-android" likewise, on the build system logos-nix names for it.
+      packages = forAllTargetsAndAndroid ({ pkgs, system, ... }:
         let
           # Common configuration
           common = import ./nix/default.nix { inherit pkgs; };
