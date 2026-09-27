@@ -2,7 +2,7 @@
   description = "Logos Module Container interface";
 
   inputs = {
-    logos-nix.url = "github:logos-co/logos-nix";
+    logos-nix.url = "github:logos-co/logos-nix/feat/standalone-apps";
     nixpkgs.follows = "logos-nix/nixpkgs";
   };
 
@@ -13,11 +13,19 @@
         inherit system;
         pkgs = import nixpkgs { inherit system; };
       });
+
+      forAllTargetsAndAndroid = f: logos-nix.lib.forAllTargets f // {
+        aarch64-android = f {
+          system = "aarch64-android";
+          inherit (logos-nix.lib.mobileTargets.aarch64-android) pkgs;
+        };
+      };
     in
     {
       # "x86_64-windows" pseudo-system: a cross derivation's `system` is its
       # BUILD platform, so it evaluates anywhere and realises on x86_64-linux.
-      packages = logos-nix.lib.forAllTargets ({ pkgs, system, ... }:
+      # "aarch64-android" likewise, on the build system logos-nix names for it.
+      packages = forAllTargetsAndAndroid ({ pkgs, system, ... }:
         let
           # Common configuration
           common = import ./nix/default.nix { inherit pkgs; };
@@ -29,6 +37,10 @@
           # Header-only contract: the package is just the installed headers.
           include = import ./nix/include.nix { inherit pkgs common src; };
           tests = import ./nix/tests.nix { inherit pkgs common build; };
+
+          # A container implementation that never starts a process, with its own
+          # LogosContainerImpl config: for a runtime embedded in an app (iOS).
+          none = import ./nix/none.nix { inherit pkgs common src; };
 
           # Combined package (headers only)
           logos-container = pkgs.symlinkJoin {
@@ -43,6 +55,8 @@
 
           # Combined output
           logos-container = logos-container;
+
+          inherit none;
 
           # Default package
           default = logos-container;
@@ -59,6 +73,7 @@
           } ''
             echo "Running logos-container tests..."
             ${testsPkg}/bin/logos_container_tests
+            ${testsPkg}/bin/logos_container_none_tests
             mkdir -p $out
             touch $out/.tests-passed
           '';

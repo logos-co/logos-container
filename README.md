@@ -14,11 +14,17 @@ link-time seams:
 A consumer (liblogos) calls them without naming a concrete type; the
 *definitions* are provided by whichever implementation library is linked in.
 
+This repo also ships one such implementation, `none` (`none/`): both seams return
+nullptr, so no process is ever started, for a runtime embedded in an app that may
+not spawn (iOS). Like logos-container-subprocess it installs the `LogosContainerImpl`
+CMake config, so a consumer selects it by putting `.#none` on `CMAKE_PREFIX_PATH`.
+
 ## Build & test
 
 ```bash
 nix build .#logos-container                  # the installed headers
-nix build .#checks.aarch64-linux.tests -L    # run the contract tests
+nix build .#none                             # the none implementation
+nix build .#checks.aarch64-linux.tests -L    # run the contract and none tests
 ```
 
 Consume it from CMake via the `logos_container` INTERFACE target (carries the
