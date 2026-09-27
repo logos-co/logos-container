@@ -16,3 +16,16 @@ target_include_directories(logos_container_tests PRIVATE
 )
 
 gtest_discover_tests(logos_container_tests)
+
+# The "none" implementation on its own, as a consumer links it.
+add_executable(logos_container_none_tests
+    test_none.cpp
+)
+
+target_link_libraries(logos_container_none_tests PRIVATE
+    logos_container_none
+    GTest::gtest
+    GTest::gtest_main
+)
+
+gtest_discover_tests(logos_container_none_tests)

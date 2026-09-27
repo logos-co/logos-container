@@ -17,6 +17,8 @@ Makefile
 *.cmake
 !CMakeLists.txt
 !nix/*.nix
+# The none implementation's hand-authored LogosContainerImpl config.
+!none/*.cmake
 
 # Ninja
 .ninja_deps

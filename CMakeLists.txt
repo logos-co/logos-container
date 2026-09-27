@@ -14,6 +14,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # Build src first
 add_subdirectory(src)
 
+# The "none" container implementation (packages.<system>.none).
+add_subdirectory(none)
+
+# Opt-out, so the none package builds where there is no gtest (a cross build).
+option(LOGOS_CONTAINER_BUILD_TESTS "Build the logos-container tests" ON)
+
+if(LOGOS_CONTAINER_BUILD_TESTS)
+
 # GoogleTest setup
 # Try to find GoogleTest via find_package first (for Nix and system installations)
 find_package(GTest QUIET)
@@ -35,6 +43,8 @@ include(GoogleTest)
 
 # Add tests subdirectory
 add_subdirectory(tests)
+
+endif()  # LOGOS_CONTAINER_BUILD_TESTS
 
 # Header-only contract: nothing to install but the headers (mirrors
 # process-stats so consumers use <logos_container/module_container.h>).

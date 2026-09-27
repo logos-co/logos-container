@@ -38,6 +38,10 @@
           include = import ./nix/include.nix { inherit pkgs common src; };
           tests = import ./nix/tests.nix { inherit pkgs common build; };
 
+          # A container implementation that never starts a process, with its own
+          # LogosContainerImpl config: for a runtime embedded in an app (iOS).
+          none = import ./nix/none.nix { inherit pkgs common src; };
+
           # Combined package (headers only)
           logos-container = pkgs.symlinkJoin {
             name = "logos-container";
@@ -51,6 +55,8 @@
 
           # Combined output
           logos-container = logos-container;
+
+          inherit none;
 
           # Default package
           default = logos-container;
@@ -67,6 +73,7 @@
           } ''
             echo "Running logos-container tests..."
             ${testsPkg}/bin/logos_container_tests
+            ${testsPkg}/bin/logos_container_none_tests
             mkdir -p $out
             touch $out/.tests-passed
           '';
